@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, selectinload
 
-from app.api.deps import get_current_user, require_role
+from app.api.deps import  require_role
 from app.db.session import get_db
 from app.models import Event, Movie, Seat, User
 from app.schemas.event import EventCreate, EventDetail, EventOut, SeatOut
 from app.services.tmdb_client import buscar_detalhe_filme, buscar_filmes_em_cartaz, buscar_filme_por_texto
+from app.schemas.event import EventUpdate
+
+
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -75,3 +78,40 @@ async def criar_evento(
     db.commit()
     db.refresh(evento)
     return evento
+
+
+
+@router.patch("/{event_id}", response_model=EventOut)
+def editar_evento(
+    event_id: int,
+    dados: EventUpdate,
+    db: Session = Depends(get_db),
+    organizador: User = Depends(require_role("organizador")),
+):
+    evento = db.get(Event, event_id)
+    if evento is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Evento não encontrado")
+    if evento.organizador_id != organizador.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Você não é o organizador deste evento")
+
+    for campo, valor in dados.model_dump(exclude_unset=True).items():
+        setattr(evento, campo, valor)
+    db.commit()
+    db.refresh(evento)
+    return evento
+
+
+@router.delete("/{event_id}", status_code=status.HTTP_204_NO_CONTENT)
+def cancelar_evento(
+    event_id: int,
+    db: Session = Depends(get_db),
+    organizador: User = Depends(require_role("organizador")),
+):
+    evento = db.get(Event, event_id)
+    if evento is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Evento não encontrado")
+    if evento.organizador_id != organizador.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Você não é o organizador deste evento")
+
+    db.delete(evento)
+    db.commit()

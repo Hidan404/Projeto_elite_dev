@@ -34,6 +34,11 @@ class EventOut(BaseModel):
     class Config:
         from_attributes = True
 
+class EventUpdate(BaseModel):
+    data: datetime | None = None
+    local: str | None = None
+    preco: Decimal | None = None        
+
 
 class EventDetail(EventOut):
     seats: list[SeatOut] = []
