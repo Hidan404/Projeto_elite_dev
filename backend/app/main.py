@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import auth
+from app.api.routes import auth, events
 
 app = FastAPI(title="Elite Dev — Eventos e Ingressos")
 
@@ -14,10 +14,14 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(events.router)
 
 
 @app.get("/")
 def root():
     return {"mensagem": "API Elite Dev rodando"}
+
+
+
 
 
