@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: elite_dev_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: elite
+      POSTGRES_PASSWORD: elite_dev
+      POSTGRES_DB: elite_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
