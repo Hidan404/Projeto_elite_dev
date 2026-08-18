@@ -34,3 +34,16 @@ def meus_ingressos(
         .all()
     )
     return [montar_ticket_out(t) for t in tickets]
+
+
+@router.get("/share/{token}", response_model=TicketOut)
+def ingresso_compartilhado(token: str, db: Session = Depends(get_db)):
+    ticket = (
+        db.query(Ticket)
+        .options(selectinload(Ticket.event), selectinload(Ticket.seat))
+        .filter(Ticket.share_token == token)
+        .first()
+    )
+    if ticket is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Ingresso não encontrado")
+    return montar_ticket_out(ticket)
