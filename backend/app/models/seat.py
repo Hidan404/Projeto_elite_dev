@@ -13,6 +13,6 @@ class Seat(Base):
     fileira: Mapped[str] = mapped_column(String(2))
     numero: Mapped[int]
     status: Mapped[str] = mapped_column(String(10), default="livre")
-
+    reservation_id: Mapped[int | None] = mapped_column(ForeignKey("reservations.id"), nullable=True)
 
     event = relationship("Event", back_populates="seats")

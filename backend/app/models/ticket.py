@@ -19,4 +19,6 @@ class Ticket(Base):
     criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     reservation = relationship("Reservation", back_populates="tickets")
+    event = relationship("Event")
+    seat = relationship("Seat")
     validation = relationship("Validation", back_populates="ticket", uselist=False)
