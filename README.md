@@ -12,6 +12,7 @@ Este é o meu processo de construção do zero: cada decisão técnica, cada err
 - [Tecnologias](#tecnologias)
 - [Arquitetura](#arquitetura)
 - [Como rodar localmente](#como-rodar-localmente)
+- [Produção (deploy)](#produção-deploy)
 - [Dados de teste](#dados-de-teste)
 - [Fluxo de uso](#fluxo-de-uso)
 - [Endpoints da API](#endpoints-da-api)
@@ -38,7 +39,7 @@ O fluxo completo é esse:
 
 | Camada | Escolha | Por quê |
 |---|---|---|
-| Backend | **Python + FastAPI** | Rápido de desenvolver, documentação automática (`/docs`), async de graça |
+| Backend | **Python + FastAPI** | Rápido de desenvolver, documentação automática (`/docs`), async de graça e afinidade com esta linguagem de programação |
 | Frontend | **React + Vite** | O desafio pede React; Vite é rápido e simples |
 | Banco | **PostgreSQL** | Transações atômicas — essencial pra nunca vender o mesmo assento 2x |
 | ORM/Migrations | **SQLAlchemy 2 + Alembic** | Padrão de mercado, migrações versionadas |
@@ -174,6 +175,29 @@ O app abre em `http://localhost:5173`.
 
 ---
 
+## Produção (deploy)
+
+O projeto está publicado e rodando:
+
+| Camada | URL |
+|---|---|
+| Frontend (React) | [cineelite.vercel.app](https://cineelite.vercel.app) |
+| API (FastAPI) | [projeto-elite-dev.onrender.com](https://projeto-elite-dev.onrender.com) |
+| Banco de dados | Postgres gerenciado no **Neon** |
+
+Como o deploy foi feito:
+
+- **Backend (Render)**: Web Service Python — Root Directory `backend`, build com `pip install -r requirements.txt` e start command `alembic upgrade head && python scripts/seed.py && uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Também deixei um `Dockerfile` e um `render.yaml` prontos no repo (caminho `backend/Dockerfile`) caso prefira deploy por container.
+- **Frontend (Vercel)**: Root Directory `frontend`, preset Vite, env var `VITE_API_URL` apontando pro Render.
+- **Banco (Neon)**: Postgres gerenciado e gratuito; a migração (`alembic upgrade head`) e o seed são rodados a cada deploy do backend.
+- **Cookie em produção**: `COOKIE_SECURE=true` + `COOKIE_SAMESITE=none` (frontend e backend em domínios diferentes, exige cookie Secure/None) e `CORS_ORIGINS=https://cineelite.vercel.app`.
+
+Variáveis de ambiente de produção: `DATABASE_URL`, `SECRET_KEY`, `TMDB_API_KEY`, `CORS_ORIGINS`, `COOKIE_SECURE`, `COOKIE_SAMESITE` (modelo no `backend/.env.example`).
+
+> ⚠️ No plano free do Render, o backend pausa após ~15 min sem tráfego; a primeira requisição demora ~1 min pra acordar o serviço.
+
+---
+
 ## Dados de teste
 
 O seed cria esses usuários pra você percorrer o fluxo sem montar nada:
@@ -256,7 +280,7 @@ Eu fiz uma revisão de segurança durante o projeto e corrigi uma vulnerabilidad
 - **Assento não vendido 2x** — a reserva usa um `UPDATE` condicional atômico (`WHERE status='livre'`); se dois pedidos disputarem o mesmo assento, um recebe **409**.
 - **Ingresso não validado 2x** — ao validar, o ticket vira `utilizado` e a tabela `validations` tem `ticket_id` **UNIQUE** (proteção extra no banco).
 - **`SECRET_KEY` e `TMDB_API_KEY` fora do git** — o `.env` está no `.gitignore`.
-- **CORS restrito** — só `localhost:5173` (em produção, o domínio do frontend).
+- **CORS restrito** — configurado por env var (`CORS_ORIGINS`): em dev `localhost:5173`, em produção o domínio do frontend.
 
 ---
 
@@ -264,7 +288,7 @@ Eu fiz uma revisão de segurança durante o projeto e corrigi uma vulnerabilidad
 
 Sendo honesto sobre o que não está pronto:
 
-- **Deploy**: a aplicação roda localmente (backend `:8004`, frontend `:5173`). A publicação em produção (Render + Vercel) é o próximo passo do planejamento.
+- **Deploy**: em produção 🔥 Frontend em [cineelite.vercel.app](https://cineelite.vercel.app), API em [projeto-elite-dev.onrender.com](https://projeto-elite-dev.onrender.com), banco Postgres gerenciado no Neon. Em dev, o projeto roda localmente (backend `:8004`, frontend `:5173`). No Render, o plano free pausa o serviço após ~15 min sem tráfego (primeira requisição demora ~1 min pra acordar).
 - **Câmera na portaria**: a leitura por câmera está implementada, mas eu só consegui testar o fluxo completo por digitação manual (sem uma webcam/celular no mesmo IP no momento do teste). O fluxo da câmera deve ser testado em produção (HTTPS libera acesso à câmera no browser).
 - **Testes automatizados**: não há suíte de testes automatizada ainda; a validação foi feita por testes de API manuais (scripts/curl) ao longo do desenvolvimento.
 - **Sem pagamento real**: a cobrança é 100% simulada (4242 aprova, qualquer outro recusa), como o desafio permite.
