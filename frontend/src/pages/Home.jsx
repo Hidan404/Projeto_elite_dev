@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import api from '../services/api'
 import EventCard from '../components/EventCard'
 
@@ -6,13 +6,25 @@ export default function Home() {
   const [eventos, setEventos] = useState([])
   const [busca, setBusca] = useState('')
   const [carregando, setCarregando] = useState(true)
+  const [erro, setErro] = useState('')
 
-  useEffect(() => {
-    api.get('/events')
+  const buscar = useCallback(() => {
+    api
+      .get('/events')
       .then((r) => setEventos(r.data))
-      .catch(() => {})
+      .catch(() => setErro('Não foi possível carregar os eventos. O servidor pode estar iniciando (leva ~1 min).'))
       .finally(() => setCarregando(false))
   }, [])
+
+  useEffect(() => {
+    buscar()
+  }, [buscar])
+
+  const carregar = () => {
+    setCarregando(true)
+    setErro('')
+    buscar()
+  }
 
   const filtrados = eventos.filter((e) =>
     e.titulo.toLowerCase().includes(busca.toLowerCase()),
@@ -36,6 +48,12 @@ export default function Home() {
 
       {carregando ? (
         <div className="empty-state">Carregando eventos...</div>
+      ) : erro ? (
+        <div className="empty-state">
+          <h3>Ops, algo deu errado</h3>
+          <p>{erro}</p>
+          <button className="btn mt-md" onClick={carregar}>Tentar novamente</button>
+        </div>
       ) : filtrados.length === 0 ? (
         <div className="empty-state">
           <h3>Nenhum evento encontrado</h3>
