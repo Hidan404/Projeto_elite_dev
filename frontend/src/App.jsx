@@ -12,9 +12,10 @@ import Painel from './pages/Painel'
 import IngressoCompartilhado from './pages/IngressoCompartilhado'
 
 function RequireAuth({ role, children }) {
-  const { user } = useAuth()
+  const { user, carregando } = useAuth()
   const location = useLocation()
 
+  if (carregando) return <div className="container empty-state">Carregando...</div>
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />
   if (role && user.role !== role) return <Navigate to="/" replace />
   return children

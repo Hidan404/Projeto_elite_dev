@@ -103,3 +103,20 @@ Resumo dos conceitos aprendidos em cada sprint. Serve como material de estudo e 
 
 ### Testes de segurança executados (todos passando)
 `role=organizador` no registro → vira cliente (201) · senha curta → 422 · cliente criando evento → 403 · login inválido → 401 genérico · token adulterado → 401 · org/portaria do seed seguem funcionando.
+
+---
+
+## Sprint 5.8 — Token em cookie HttpOnly (anti-XSS)
+
+### Por quê
+O token JWT ficava no `localStorage` — qualquer XSS (script injetado) lê `localStorage` e rouba o token. Em **cookie HttpOnly** o JavaScript nem enxerga o cookie; só o browser o envia automaticamente.
+
+### Mudanças
+- **Backend**: `login` agora define `Set-Cookie: access_token` com `HttpOnly`, `SameSite=lax` (e `secure` em produção). Novo `POST /auth/logout` que expira o cookie. Novo `GET /auth/me` que valida o cookie e devolve o usuário.
+- **`deps.py`**: `get_current_user` lê o token **primeiro do cookie**, com fallback pro header `Authorization` (mantém compatibilidade com curl/scripts).
+- **Frontend**: axios com `withCredentials: true`; `AuthContext` restaura a sessão chamando `/auth/me` no load; `logout` chama o endpoint. `localStorage` agora só guarda dados não sensíveis (email/role p/ roteamento).
+
+### Importante
+- **CORS com credentials**: `allow_credentials=True` + origem explícita (`localhost:5173`) — no deploy, adicionar o domínio do Vercel.
+- **`SameSite=lax`** funciona em dev (mesmo host `localhost`). Em produção (frontend e API em domínios diferentes) pode precisar `SameSite=None; Secure` — aí o backend precisa de HTTPS (Render/Vercel já têm).
+- **Node não persiste cookies** por padrão — teste via curl com `-c/-b` (jar) reproduz o comportamento do browser.

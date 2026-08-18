@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -9,15 +9,24 @@ from app.services.security import decodificar_token
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
+COOKIE_NAME = "access_token"
+
 
 def get_current_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
-    if credentials is None:
+    token = None
+    if credentials is not None:
+        token = credentials.credentials
+    if token is None:
+        token = request.cookies.get(COOKIE_NAME)
+
+    if token is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token ausente")
 
-    payload = decodificar_token(credentials.credentials)
+    payload = decodificar_token(token)
     if payload is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token inválido ou expirado")
 
