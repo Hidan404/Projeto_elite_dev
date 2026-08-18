@@ -25,10 +25,11 @@ export default function Portaria() {
     setResultado(null)
     setLendo(true)
     scannerRef.current = new Html5Qrcode('reader')
+    const largura = Math.min(Math.floor(window.innerWidth * 0.8), 340)
     scannerRef.current
       .start(
         { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
+        { fps: 10, qrbox: { width: largura, height: largura } },
         (text) => {
           setCodigo(text)
           setLendo(false)
@@ -37,6 +38,9 @@ export default function Portaria() {
         },
         () => {},
       )
+      .then(() => {
+        scannerRef.current?.applyVideoConstraints({ advanced: [{ zoom: 2 }] }).catch(() => {})
+      })
       .catch((e) => {
         setErro('Não foi possível acessar a câmera: ' + (e?.message || e))
         setLendo(false)

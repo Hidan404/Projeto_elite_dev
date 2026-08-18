@@ -350,6 +350,17 @@ a:hover { text-decoration: underline; }
 .validation-box.error { background: var(--danger-soft); color: var(--danger); }
 .validation-box.warning { background: var(--warning-soft); color: var(--warning); }
 
+/* QR scanner (html5-qrcode) */
+#reader {
+  width: 100%;
+}
+#reader video {
+  width: 100% !important;
+  border-radius: var(--radius-sm);
+  background: #000;
+  object-fit: cover;
+}
+
 .empty-state {
   text-align: center;
   color: var(--text-muted);
