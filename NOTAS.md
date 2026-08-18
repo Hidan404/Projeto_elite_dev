@@ -120,3 +120,40 @@ O token JWT ficava no `localStorage` — qualquer XSS (script injetado) lê `loc
 - **CORS com credentials**: `allow_credentials=True` + origem explícita (`localhost:5173`) — no deploy, adicionar o domínio do Vercel.
 - **`SameSite=lax`** funciona em dev (mesmo host `localhost`). Em produção (frontend e API em domínios diferentes) pode precisar `SameSite=None; Secure` — aí o backend precisa de HTTPS (Render/Vercel já têm).
 - **Node não persiste cookies** por padrão — teste via curl com `-c/-b` (jar) reproduz o comportamento do browser.
+
+## Sprint 6.1 — Deploy em produção + responsivo + câmera + SEO
+
+### Deploy (Render + Vercel + Neon)
+O projeto saiu do local e foi pra produção:
+- **Backend**: Web Service no Render (Root Directory `backend`, Python). No boot roda `alembic upgrade head && python scripts/seed.py && uvicorn` (migração + seed automáticos a cada deploy).
+- **Frontend**: Vercel, Root Directory `frontend`, env `VITE_API_URL` apontando pro Render. Nome do projeto: `cineelite`.
+- **Banco**: Postgres gerenciado no **Neon** (gratuito, não expira como o do Render).
+- **Cookie em produção**: `COOKIE_SECURE=true` + `COOKIE_SAMESITE=none` (domínios diferentes exigem isso) e `CORS_ORIGINS=https://cineelite.vercel.app`.
+
+### Erros que valem anotar
+- **Alembic não lia `DATABASE_URL`**: o `env.py` usa `config.get_main_option("sqlalchemy.url")` do `alembic.ini` (localhost). Tentei migrar o Neon com a env var e **nada aconteceu** (a migração foi pro banco local). Correção: `config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)` no `env.py`.
+- **Seed antes da migração**: rodei o `seed.py` contra o Neon antes de aplicar a migração → `relation "users" does not exist`. Ordem importa: migração primeiro, seed depois (no Dockerfile/start command já está nessa ordem).
+- **Render procurou `requirements.txt` na raiz**: o serviço detectou Python e tentou buildar na raiz do repo. Correção: `Root Directory: backend` no Render.
+- **Links profundos quebravam no Vercel**: `/ingresso/:token` (link compartilhado!) e `/eventos/1` davam **404 no refresh** — o Vercel não sabia redirecionar pra SPA. Correção: `frontend/vercel.json` com rewrite de todas as rotas pra `/index.html`. Foi um bug real do compartilhamento, não só de SEO.
+
+### Responsivo (era 100% desktop)
+Zero media queries no CSS. Adicionei:
+- **Menu hambúrguer** no mobile (`Navbar.jsx` com `useState` + fechar ao clicar fora) — foi a opção que escolhi em vez de só quebrar linha.
+- Media queries `768px` (layout quebra) e `480px` (ajustes finos): ticket empilha com o rasgo na horizontal, mapa de assentos rola de lado com assentos menores, forms viram coluna, pôster do evento em largura cheia.
+- Desktop permanece **inalterado** (media queries só aplicam abaixo do breakpoint).
+
+### Câmera da portaria ("parece distante")
+O `qrbox` era fixo em 250×250 — a câmera filma a cena inteira, então o QR precisava caber numa caixa pequena e você tinha que afastar o celular. Correções:
+- `qrbox` proporcional à largura da tela (`min(largura * 0.8, 340)`).
+- `applyVideoConstraints({ advanced: [{ zoom: 2 }] })` após iniciar (funciona em Android; é ignorado onde não suporta).
+- CSS: `#reader video` em `width: 100%` (o `html5-qrcode` renderiza o vídeo pequeno/centralizado por padrão).
+
+### SEO (aparecer no Google)
+- Meta tags: `description`, `keywords`, `robots`, `canonical`, `theme-color`.
+- **Open Graph** (`og:title/description/url/image`) e **Twitter Card** — prévia bonita ao compartilhar link.
+- **JSON-LD** (`WebSite` + `SearchAction`) — dados estruturados pro Google.
+- `public/robots.txt` + `public/sitemap.xml`.
+- Escolhi **SEO estático** (meta fixas, zero dependências novas) em vez de `react-helmet-async` — limite honesto: título/meta por-página exigiria a dependência.
+
+### Lição
+**Ordem no deploy importa**: migração → seed → código. E **testar produção de verdade** (link compartilhado, refresh de rota, CORS cross-origin) pega bugs que o ambiente local nunca mostra.
