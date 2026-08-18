@@ -79,6 +79,22 @@ a:hover { text-decoration: underline; }
   color: var(--text);
 }
 .brand span { color: var(--primary); }
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+}
+.nav-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+}
 .nav-links { display: flex; gap: 8px; align-items: center; }
 .nav-links a, .nav-links button {
   background: none;
@@ -360,3 +376,79 @@ a:hover { text-decoration: underline; }
 .movie-result:hover { border-color: var(--primary); }
 .movie-result.selected { border-color: var(--primary); background: var(--primary-soft); }
 .movie-result img { width: 44px; height: 62px; object-fit: cover; border-radius: 4px; }
+
+/* ===== Responsivo ===== */
+
+@media (max-width: 768px) {
+  .container { padding: 0 14px; }
+
+  /* Navbar hambúrguer */
+  .nav-toggle { display: flex; }
+  .navbar-inner { flex-wrap: wrap; }
+  .nav-links {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    padding: 10px 0 4px;
+    border-top: 1px solid var(--border);
+    margin-top: 10px;
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a, .nav-links button {
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 1rem;
+    border-radius: var(--radius-sm);
+  }
+  .nav-links a:hover, .nav-links button:hover { background: var(--bg); }
+  .nav-user { padding: 6px 12px; }
+
+  /* Layouts que quebram em telas estreitas */
+  .flex, .flex-between, .search-bar, .seat-bar, .event-footer { flex-wrap: wrap; }
+  .detail-layout { flex-direction: column; }
+  .detail-poster { width: 100%; max-width: 320px; }
+  .form-row { flex-direction: column; gap: 0; }
+
+  /* Ticket empilhado: QR em cima, rasgo horizontal, ações embaixo */
+  .ticket { flex-direction: column; align-items: stretch; }
+  .ticket-stub { flex-direction: column; text-align: center; }
+  .ticket-qr { align-self: center; }
+  .ticket-info { min-width: 0; }
+  .ticket-actions { flex-direction: row; justify-content: center; flex-wrap: wrap; }
+  .ticket-rip {
+    align-self: stretch;
+    width: auto;
+    height: 22px;
+    margin: -1px 0;
+    background:
+      radial-gradient(circle at center top, transparent 8px, var(--card) 9px) top / 26px 100% repeat-x,
+      radial-gradient(circle at center bottom, var(--bg) 8px, transparent 9px) bottom / 26px 100% repeat-x;
+  }
+
+  /* Mapa de assentos: cabe na tela ou rola de lado */
+  .seat-map { overflow-x: auto; max-width: 100%; }
+  .seat { width: 28px; height: 28px; font-size: 0.65rem; }
+  .seat-row { gap: 4px; }
+  .screen-bar { max-width: 300px; }
+
+  /* Espaçamentos e páginas */
+  .auth-page { margin: 32px auto; }
+  .card-padding { padding: 18px; }
+  .home-header { padding: 24px 18px 16px; }
+  .page-header { margin: 20px 0 16px; }
+  .page-header h1 { font-size: 1.5rem; }
+  .detail-body h1 { font-size: 1.5rem; }
+}
+
+@media (max-width: 480px) {
+  .brand { font-size: 1.1rem; }
+  .home-header h1 { font-size: 1.6rem; }
+  .seat { width: 24px; height: 24px; font-size: 0.6rem; }
+  .seat-row-label { width: 18px; font-size: 0.75rem; }
+  .screen-bar { max-width: 240px; }
+  .btn { padding: 9px 14px; }
+  .search-bar { flex-direction: column; }
+  .search-bar .btn { width: 100%; }
+}
