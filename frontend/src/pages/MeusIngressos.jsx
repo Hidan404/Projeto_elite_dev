@@ -25,6 +25,16 @@ export default function MeusIngressos() {
     }
   }
 
+  const copiarCodigo = async (codigo) => {
+    try {
+      await navigator.clipboard.writeText(codigo)
+      setCopiado(`codigo-${codigo.slice(0, 12)}`)
+      setTimeout(() => setCopiado(null), 2500)
+    } catch {
+      alert(codigo)
+    }
+  }
+
   const formatarData = (data) => {
     if (!data) return ''
     return new Date(data).toLocaleString('pt-BR', {
@@ -69,6 +79,9 @@ export default function MeusIngressos() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <button className="btn btn-sm btn-secondary" onClick={() => compartilhar(t.share_token)}>
                   {copiado === t.share_token ? '✓ Link copiado!' : 'Compartilhar'}
+                </button>
+                <button className="btn btn-sm btn-secondary" onClick={() => copiarCodigo(t.codigo)}>
+                  {copiado === `codigo-${t.codigo.slice(0, 12)}` ? '✓ Código copiado!' : 'Copiar código'}
                 </button>
               </div>
             </div>
