@@ -34,7 +34,7 @@ export default function EventoDetalhe() {
       const { data } = await api.post(`/events/${id}/reserve`, {
         assentos: selecionados,
       })
-      navigate(`/checkout/${data.id}`, { state: { evento } })
+      navigate(`/checkout/${data.id}`, { state: { evento, reserva: data } })
     } catch (err) {
       setErro(err.response?.data?.detail || 'Erro ao reservar assentos.')
     }

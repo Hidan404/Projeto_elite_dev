@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import  require_role
 from app.db.session import get_db
-from app.models import Event, Movie, Seat, User
+from app.models import Event, Movie, Reservation, Seat, Ticket, User
 from app.schemas.event import EventCreate, EventDetail, EventOut, SeatOut
 from app.services.tmdb_client import buscar_detalhe_filme, buscar_filmes_em_cartaz, buscar_filme_por_texto
 from app.schemas.event import EventUpdate
@@ -19,9 +19,23 @@ def gerar_assentos(db: Session, evento: Event, fileiras: list[str], cadeiras_por
             db.add(Seat(event_id=evento.id, fileira=letra, numero=numero, status="livre"))
 
 
+def montar_evento_out(evento: Event) -> EventOut:
+    return EventOut(
+        id=evento.id,
+        tmdb_movie_id=evento.tmdb_movie_id,
+        titulo=evento.titulo,
+        sinopse=evento.sinopse,
+        data=evento.data,
+        local=evento.local,
+        preco=evento.preco,
+        poster_path=evento.movie.poster_path if evento.movie else None,
+    )
+
+
 @router.get("", response_model=list[EventOut])
 def listar_eventos(db: Session = Depends(get_db)):
-    return db.query(Event).order_by(Event.data).all()
+    eventos = db.query(Event).options(selectinload(Event.movie)).order_by(Event.data).all()
+    return [montar_evento_out(e) for e in eventos]
 
 
 @router.get("/search-tmdb")
@@ -39,10 +53,12 @@ async def buscar_catalogo(query: str = ""):
 
 @router.get("/{event_id}", response_model=EventDetail)
 def detalhe_evento(event_id: int, db: Session = Depends(get_db)):
-    evento = db.query(Event).options(selectinload(Event.seats)).filter(Event.id == event_id).first()
+    evento = db.query(Event).options(selectinload(Event.seats), selectinload(Event.movie)).filter(Event.id == event_id).first()
     if evento is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Evento não encontrado")
-    return evento
+    detalhe = montar_evento_out(evento).model_dump()
+    detalhe["seats"] = evento.seats
+    return detalhe
 
 
 @router.post("", response_model=EventOut, status_code=status.HTTP_201_CREATED)
@@ -77,7 +93,8 @@ async def criar_evento(
     gerar_assentos(db, evento, ["A", "B", "C", "D"], 8)
     db.commit()
     db.refresh(evento)
-    return evento
+    evento.movie = filme
+    return montar_evento_out(evento)
 
 
 
@@ -98,7 +115,7 @@ def editar_evento(
         setattr(evento, campo, valor)
     db.commit()
     db.refresh(evento)
-    return evento
+    return montar_evento_out(evento)
 
 
 @router.delete("/{event_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -112,6 +129,22 @@ def cancelar_evento(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Evento não encontrado")
     if evento.organizador_id != organizador.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Você não é o organizador deste evento")
+
+    tem_ingressos = db.query(Ticket).filter(Ticket.event_id == event_id).first()
+    if tem_ingressos:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            "Evento possui ingressos vendidos. Não é possível cancelar.",
+        )
+
+    reservas = db.query(Reservation).filter(Reservation.event_id == event_id).all()
+    for r in reservas:
+        if r.status == "pendente":
+            db.query(Seat).filter(Seat.reservation_id == r.id).update(
+                {"status": "livre", "reservation_id": None}, synchronize_session=False
+            )
+            r.status = "cancelada"
+    db.commit()
 
     db.delete(evento)
     db.commit()

@@ -11,6 +11,7 @@ export default function Painel() {
   const [resultados, setResultados] = useState([])
   const [form, setForm] = useState({ tmdb_movie_id: 0, data: '', local: '', preco: '' })
   const [erro, setErro] = useState('')
+  const [selecionado, setSelecionado] = useState(null)
 
   const carregar = () => {
     api.get('/events')
@@ -50,6 +51,7 @@ export default function Painel() {
       })
       setResultados([])
       setForm({ tmdb_movie_id: 0, data: '', local: '', preco: '' })
+      setSelecionado(null)
       carregar()
     } catch (err) {
       setErro(err.response?.data?.detail || 'Erro ao criar evento.')
@@ -57,12 +59,14 @@ export default function Painel() {
   }
 
   const cancelarEvento = async (id) => {
-    if (!window.confirm('Cancelar este evento? Os ingressos vendidos serão invalidados.')) return
+    if (!window.confirm('Cancelar este evento? Isso só é possível se ele ainda não tiver ingressos vendidos.')) return
     try {
       await api.delete(`/events/${id}`)
+      setErro('')
       carregar()
     } catch (err) {
-      setErro(err.response?.data?.detail || 'Erro ao cancelar.')
+      setErro(err.response?.data?.detail || 'Erro ao cancelar. Este evento não pode ser removido.')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
@@ -73,7 +77,12 @@ export default function Painel() {
         <p>Publique um novo evento a partir do catálogo de filmes ou gerencie os existentes.</p>
       </div>
 
-      {erro && <div className="form-error">{erro}</div>}
+      {erro && (
+        <div className="card card-padding" style={{ borderColor: '#fecaca', background: '#fef2f2', marginBottom: '24px' }}>
+          <strong style={{ color: 'var(--danger)' }}>Não foi possível concluir a ação</strong>
+          <p style={{ color: 'var(--text)', marginTop: '6px' }}>{erro}</p>
+        </div>
+      )}
 
       <div className="card card-padding" style={{ marginBottom: '24px' }}>
         <h2 style={{ fontSize: '1.1rem', marginBottom: '14px' }}>1. Buscar filme no catálogo</h2>
@@ -96,7 +105,10 @@ export default function Painel() {
                   <strong>{f.titulo}</strong>
                   <p className="event-meta" style={{ fontSize: '0.8rem' }}>ID TMDb: {f.id}</p>
                 </div>
-                <button className="btn btn-sm" onClick={() => setForm((prev) => ({ ...prev, tmdb_movie_id: f.id }))}>
+                <button type="button" className="btn btn-sm" onClick={() => {
+                  setForm((prev) => ({ ...prev, tmdb_movie_id: f.id }))
+                  setSelecionado(f)
+                }}>
                   Selecionar
                 </button>
               </div>
@@ -109,8 +121,18 @@ export default function Painel() {
         <h2 style={{ fontSize: '1.1rem', marginBottom: '14px' }}>2. Publicar evento</h2>
         <form onSubmit={criarEvento}>
           <div className="form-group">
-            <label>ID do filme no TMDb</label>
-            <input className="input" value={form.tmdb_movie_id || ''} readOnly placeholder="Selecione um filme acima" />
+            <label>Filme selecionado</label>
+            {selecionado ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
+                <img src={selecionado.poster_path ? `${IMG_BASE}${selecionado.poster_path}` : 'https://placehold.co/60x90'} alt="" style={{ width: '50px', borderRadius: '6px' }} />
+                <div>
+                  <strong>{selecionado.titulo}</strong>
+                  <p className="event-meta" style={{ fontSize: '0.8rem' }}>ID TMDb: {selecionado.id}</p>
+                </div>
+              </div>
+            ) : (
+              <input className="input" value="" readOnly placeholder="Selecione um filme na busca acima" />
+            )}
           </div>
           <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
             <div className="form-group" style={{ flex: 2 }}>

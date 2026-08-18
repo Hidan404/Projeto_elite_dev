@@ -6,7 +6,10 @@ export default function Checkout() {
   const { state, pathname } = useLocation()
   const navigate = useNavigate()
   const evento = state?.evento
+  const reserva = state?.reserva
   const reservaId = pathname.split('/')[2]
+  const quantidade = reserva?.assentos?.length || 0
+  const total = Number(evento?.preco || 0) * quantidade
 
   const [numero, setNumero] = useState('')
   const [validade, setValidade] = useState('')
@@ -14,8 +17,8 @@ export default function Checkout() {
   const [erro, setErro] = useState('')
   const [processando, setProcessando] = useState(false)
 
-  if (!evento) {
-    return <div className="container empty-state">Reserva não encontrada.</div>
+  if (!evento || !reserva) {
+    return <div className="container empty-state">Reserva não encontrada. Volte e selecione seus assentos.</div>
   }
 
   const pagar = async (e) => {
@@ -45,8 +48,9 @@ export default function Checkout() {
       <div className="card card-padding" style={{ marginBottom: '20px' }}>
         <h2 style={{ fontSize: '1.1rem', marginBottom: '10px' }}>Resumo</h2>
         <div className="summary-row"><span>{evento.titulo}</span><span>{evento.local}</span></div>
-        <div className="summary-row"><span>Assentos reservados</span><span>{state?.reserva?.assentos?.join(', ') || '—'}</span></div>
-        <div className="summary-row summary-total"><span>Total</span><span>{Number(evento.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>
+        <div className="summary-row"><span>Assentos reservados</span><span>{reserva.assentos.join(', ')}</span></div>
+        <div className="summary-row"><span>Preço por assento</span><span>{Number(evento.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>
+        <div className="summary-row summary-total"><span>Total ({quantidade} ingresso{quantidade > 1 ? 's' : ''})</span><span>{total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>
       </div>
 
       {erro && <div className="form-error">{erro}</div>}

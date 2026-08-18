@@ -21,3 +21,9 @@ class Event(Base):
 
 
     seats = relationship("Seat", back_populates="event", cascade="all, delete-orphan")
+    movie = relationship(
+        "Movie",
+        primaryjoin="Event.tmdb_movie_id == Movie.tmdb_id",
+        foreign_keys="Event.tmdb_movie_id",
+        uselist=False,
+    )
