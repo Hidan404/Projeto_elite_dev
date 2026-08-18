@@ -16,8 +16,9 @@ def verificar_hash(senha_plano: str, hash_armazenado: str) -> bool:
 
 
 def criar_token(user_id: int, role: str) -> str:
-    expira = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    payload = {"sub": str(user_id), "role": role, "exp": expira}
+    agora = datetime.now(timezone.utc)
+    expira = agora + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    payload = {"sub": str(user_id), "role": role, "iat": agora, "exp": expira}
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=ALGORITHM)
 
 

@@ -25,6 +25,9 @@ def get_current_user(
     if user is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Usuário não encontrado")
 
+    if user.role != payload.get("role"):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Token desatualizado")
+
     return user
 
 

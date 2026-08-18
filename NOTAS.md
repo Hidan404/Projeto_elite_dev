@@ -78,3 +78,28 @@ Resumo dos conceitos aprendidos em cada sprint. Serve como material de estudo e 
 
 ### Lição
 "Feito por gente" não é capricho: é **paleta com temperatura**, **tipografia com voz** e **consistência de escala** (nada de margem 14px num lugar e 16px noutro). IA tende ao meio-termo cinza; decisões visuais com personalidade são o que diferencia.
+
+---
+
+## Sprint 5.7 — Revisão de segurança (básica)
+
+### Vulnerabilidade corrigida (crítica)
+**Registro público aceitava `role` do cliente** — qualquer pessoa podia se registrar como `organizador` ou `portaria` e virar admin (escalonamento de privilégio). Correção: `UsuarioCreate` não aceita mais `role` (removido do schema) e o backend fixa `role="cliente"` no registro. Papéis privilegiados só vêm do seed.
+
+### Endurecimentos adicionais
+- **Senha mínima de 8 caracteres** — validação no schema Pydantic (`Field(min_length=8)`) + aviso no frontend. Limite de 72 bytes respeita o bcrypt.
+- **JWT com `iat`** — "issued at" no token, além do `exp` (já existia).
+- **Dupla checagem de role** — `get_current_user` agora valida que a role do token bate com a do banco; se o papel mudar, o token antigo é rejeitado.
+- **`nome` com min_length/max_length** — evita payloads absurdos.
+
+### O que já estava correto (confirmado por teste)
+- bcrypt com salt; mensagens de login genéricas (não revela se email existe).
+- JWT HS256 com expiração de 60min; `require_role` checa papel no banco.
+- SQL parametrizado (SQLAlchemy) — sem SQL injection.
+- `.env` no `.gitignore`; SECRET_KEY de 64 chars.
+- Reserva de assento atômica (UPDATE condicional) — sem venda dupla.
+- HMAC no QR — código infalsificável.
+- Validação de dono em editar/cancelar evento.
+
+### Testes de segurança executados (todos passando)
+`role=organizador` no registro → vira cliente (201) · senha curta → 422 · cliente criando evento → 403 · login inválido → 401 genérico · token adulterado → 401 · org/portaria do seed seguem funcionando.

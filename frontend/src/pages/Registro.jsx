@@ -13,8 +13,12 @@ export default function Registro() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setErro('')
+    if (senha.length < 8) {
+      setErro('A senha deve ter pelo menos 8 caracteres.')
+      return
+    }
     try {
-      await register(nome, email, senha, 'cliente')
+      await register(nome, email, senha)
       navigate('/login')
     } catch (err) {
       setErro(err.response?.data?.detail || 'Erro ao criar conta.')
