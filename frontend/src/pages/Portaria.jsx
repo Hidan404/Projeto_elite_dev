@@ -19,27 +19,36 @@ export default function Portaria() {
     api.get('/events').then((r) => setEventos(r.data)).catch(() => {})
   }, [])
 
+  const pararScanner = async (scanner = scannerRef.current) => {
+    if (!scanner) return
+    try {
+      if (scanner.isScanning) await scanner.stop()
+      await scanner.clear()
+    } catch {}
+  }
+
   useEffect(() => {
     if (modo !== 'camera') return
     setErro('')
     setResultado(null)
     setLendo(true)
-    scannerRef.current = new Html5Qrcode('reader')
+    const scanner = new Html5Qrcode('reader')
+    scannerRef.current = scanner
     const largura = Math.min(Math.floor(window.innerWidth * 0.8), 340)
-    scannerRef.current
+    scanner
       .start(
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: largura, height: largura } },
         (text) => {
           setCodigo(text)
           setLendo(false)
-          scannerRef.current?.stop().then(() => scannerRef.current?.clear()).catch(() => {})
+          pararScanner(scanner)
           validarCodigo(text)
         },
         () => {},
       )
       .then(() => {
-        scannerRef.current?.applyVideoConstraints({ advanced: [{ zoom: 2 }] }).catch(() => {})
+        scanner.applyVideoConstraints({ advanced: [{ zoom: 2 }] }).catch(() => {})
       })
       .catch((e) => {
         setErro('Não foi possível acessar a câmera: ' + (e?.message || e))
@@ -47,23 +56,13 @@ export default function Portaria() {
       })
 
     return () => {
-      scannerRef.current?.stop().then(() => scannerRef.current?.clear()).catch(() => {})
-      scannerRef.current = null
+      pararScanner(scanner)
+      if (scannerRef.current === scanner) scannerRef.current = null
     }
   }, [modo, sessaoScan])
 
-  useEffect(() => {
-    return () => {
-      scannerRef.current?.stop().then(() => scannerRef.current?.clear()).catch(() => {})
-      scannerRef.current = null
-    }
-  }, [])
-
   const pararCamera = async () => {
-    try {
-      await scannerRef.current?.stop()
-      await scannerRef.current?.clear()
-    } catch {}
+    await pararScanner()
     scannerRef.current = null
     setLendo(false)
   }
