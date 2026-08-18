@@ -24,6 +24,8 @@ def montar_ticket_out(ticket: Ticket) -> TicketOut:
         status=ticket.status,
         share_token=ticket.share_token,
         evento_titulo=ticket.event.titulo if ticket.event else "",
+        evento_data=ticket.event.data if ticket.event else None,
+        evento_local=ticket.event.local if ticket.event else None,
         assento=f"{ticket.seat.fileira}{ticket.seat.numero}" if ticket.seat else "",
     )
 

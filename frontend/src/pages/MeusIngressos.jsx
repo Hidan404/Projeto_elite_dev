@@ -19,10 +19,21 @@ export default function MeusIngressos() {
     try {
       await navigator.clipboard.writeText(url)
       setCopiado(token)
-      setTimeout(() => setCopiado(null), 2000)
+      setTimeout(() => setCopiado(null), 2500)
     } catch {
       alert(url)
     }
+  }
+
+  const formatarData = (data) => {
+    if (!data) return ''
+    return new Date(data).toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
   }
 
   if (carregando) return <div className="container empty-state">Carregando...</div>
@@ -43,15 +54,21 @@ export default function MeusIngressos() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {ingressos.map((t) => (
             <div key={t.id} className="ticket">
-              <QRCodeSVG value={t.codigo} size={120} />
+              <div style={{ background: '#fff', padding: '8px', borderRadius: '8px' }}>
+                <QRCodeSVG value={t.codigo} size={150} />
+              </div>
               <div className="ticket-info">
                 <h3>{t.evento_titulo}</h3>
                 <p className="event-meta">Assento: <strong>{t.assento}</strong></p>
-                <span className={`ticket-status ${t.status}`}>{t.status}</span>
+                {t.evento_data && <p className="event-meta">📅 {formatarData(t.evento_data)}</p>}
+                {t.evento_local && <p className="event-meta">📍 {t.evento_local}</p>}
+                <span className={`ticket-status ${t.status}`}>
+                  {t.status === 'ativo' ? 'Válido' : t.status}
+                </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <button className="btn btn-sm btn-secondary" onClick={() => compartilhar(t.share_token)}>
-                  {copiado === t.share_token ? 'Link copiado!' : 'Compartilhar'}
+                  {copiado === t.share_token ? '✓ Link copiado!' : 'Compartilhar'}
                 </button>
               </div>
             </div>

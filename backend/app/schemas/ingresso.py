@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -7,6 +9,8 @@ class TicketOut(BaseModel):
     status: str
     share_token: str
     evento_titulo: str
+    evento_data: datetime | None = None
+    evento_local: str | None = None
     assento: str
 
     class Config:

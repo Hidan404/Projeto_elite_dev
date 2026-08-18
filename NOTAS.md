@@ -31,3 +31,28 @@ Resumo dos conceitos aprendidos em cada sprint. Serve como material de estudo e 
 ---
 
 ## Sprint 2 — (em andamento)
+---
+
+## Sprint 5 — Meus ingressos + Portaria (QR, câmera, validação)
+
+### Conceitos aprendidos
+
+1. **QR Code com HMAC** — O ingresso não é um número, é um payload JSON (`{"share_token": ..., "evento_id": ...}`) assinado com HMAC. A portaria só confia no código se a assinatura bate com a chave secreta (`hmac.compare_digest`). Assim, um código forjado quebra a assinatura → "inválido". Ver: `backend/app/services/ingresso.py`.
+
+2. **`html5-qrcode` e o ciclo de vida da câmera** — A lib precisa que o `<div id="reader">` já exista no DOM antes de `start()`. Bugs clássicos:
+   - Iniciar a câmera **no mesmo evento de clique** que monta o div (React ainda não renderizou) → falha. Correto: `useEffect` disparado por `modo === 'camera'`.
+   - A lib mantém a câmera ligada mesmo quando a tela muda → precisa parar no `return` do `useEffect` (cleanup) ao sair da página.
+   - Para "Ler outro", usar um **contador de sessão** (`sessaoScan`) que força o `useEffect` a reiniciar, em vez de tentar re-setar o mesmo modo.
+
+3. **`selectinload` para N+1** — `/tickets/mine` busca tickets com `selectinload(Ticket.event, Ticket.seat)` para carregar evento e assento numa query só (sem N+1).
+
+4. **`primaryjoin` em relationship** — `Event.tmdb_movie_id == Movie.tmdb_id` liga duas tabelas por chave lógica, sem coluna FK no banco.
+
+### Erros que valem anotar
+
+- **`Html5Qrcode` e a câmera** — achar que "re-setar modo igual" reinicia a câmera. Não reinicia: `useEffect` só dispara quando o valor *muda*. Solução: `sessaoScan` como dependência.
+- **Assento pertence a um evento** — num teste, tentar comprar assento do evento A no evento B → 400 "assento não existe neste evento". Cada assento tem `event_id`.
+
+### Fluxo validado na portaria (via API)
+
+`válido` → `ja_utilizado` → `invalido` (forjado) → `evento_errado` (evento_id divergente). Todos com `mensagem` clara em português.
