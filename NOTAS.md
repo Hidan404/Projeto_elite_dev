@@ -56,3 +56,25 @@ Resumo dos conceitos aprendidos em cada sprint. Serve como material de estudo e 
 ### Fluxo validado na portaria (via API)
 
 `válido` → `ja_utilizado` → `invalido` (forjado) → `evento_errado` (evento_id divergente). Todos com `mensagem` clara em português.
+
+---
+
+## Sprint 5.5 — Identidade visual CineElite (parecer "feito por gente")
+
+### O que delatava "design de IA" e como corrigimos
+
+1. **Paleta genérica** — índigo `#4f46e5` + cinza `#f7f7f8` é o combo padrão de modelos (violeta default do Tailwind). Troca por **paleta quente de cinema claro**: creme `#faf6ef`, texto café `#292524`, acento **âmbar `#d97706`**, bordas areia. Paleta quente ≠ fria muda a percepção inteira.
+
+2. **Tipografia sem alma** — `system-ui` em tudo. Adicionada fonte display **Fraunces** (serifada editorial, Google Fonts) só nos títulos/h1/h2/h3/marca; corpo segue em system-ui. Uma fonte display em lugares certos é a mudança de maior impacto visual por menor esforço.
+
+3. **`style={{...}}` inline espalhado** — espaçamentos sem escala, cheiro de geração de código. Criadas **classes utilitárias** em CSS (`flex`, `flex-between`, `flex-col`, `gap-sm/md/lg`, `mt-*`, `mb-*`, `form-row`) e refatoradas todas as páginas. Resultado: espaçamento consistente e JSX mais limpo.
+
+### Peças de identidade
+
+- **Logo** (`components/Logo.jsx`): SVG inline de ingresso com perfurações + wordmark "CineElite" em Fraunces (Elite em âmbar). Favicon recriado com o mesmo ícone.
+- **Ingresso com estética de bilhete** (`.ticket`): QR em moldura à esquerda + dados + **coluna de perfuração** (`.ticket-rip`) feita com `radial-gradient` criando o "corte perfurado" de bilhete real.
+- **Mapa de assentos com "Tela"** (`.screen-bar`): elipse com rótulo "TELA" no topo, como sala de cinema.
+- **Cards com hover sutil** (lift + sombra), Home com header em gradiente quente.
+
+### Lição
+"Feito por gente" não é capricho: é **paleta com temperatura**, **tipografia com voz** e **consistência de escala** (nada de margem 14px num lugar e 16px noutro). IA tende ao meio-termo cinza; decisões visuais com personalidade são o que diferencia.

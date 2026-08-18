@@ -102,7 +102,7 @@ export default function Portaria() {
         <p>Valide o ingresso do cliente na entrada. Leia o QR pela câmera ou digite o código.</p>
       </div>
 
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '18px' }}>
+      <div className="flex mb-lg" style={{ gap: '10px' }}>
         <button className={`btn btn-sm ${modo === 'manual' ? '' : 'btn-secondary'}`} onClick={() => { setModo('manual'); pararCamera() }}>
           Digitar código
         </button>
@@ -112,15 +112,13 @@ export default function Portaria() {
       </div>
 
       {modo === 'camera' && (
-        <div className="card card-padding" style={{ marginBottom: '20px' }}>
-          <div id="reader" style={{ width: '100%' }}></div>
-          {lendo && <p style={{ marginTop: '10px', color: 'var(--text-muted)' }}>Aguardando QR Code...</p>}
+        <div className="card card-padding mb-lg">
+          <div id="reader"></div>
+          {lendo && <p className="event-meta mt-sm">Aguardando QR Code...</p>}
           {!lendo && (
             <>
-              <p style={{ marginTop: '10px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                QR lido e enviado para validação.
-              </p>
-              <button className="btn btn-sm btn-secondary" style={{ marginTop: '10px' }} onClick={() => setSessaoScan((s) => s + 1)}>
+              <p className="event-meta mt-sm">QR lido e enviado para validação.</p>
+              <button className="btn btn-sm btn-secondary mt-sm" onClick={() => setSessaoScan((s) => s + 1)}>
                 Ler outro
               </button>
             </>
@@ -166,7 +164,7 @@ export default function Portaria() {
       {resultado && (
         <div className={`validation-box ${resultado.status === 'valido' ? 'success' : resultado.status === 'ja_utilizado' || resultado.status === 'evento_errado' ? 'warning' : 'error'}`}>
           <strong>{tituloResultado[resultado.status] || resultado.status}</strong>
-          <div style={{ fontSize: '0.9rem', fontWeight: 'normal', marginTop: '6px' }}>{resultado.mensagem}</div>
+          <div className="event-meta mt-sm" style={{ fontSize: '0.9rem', fontWeight: 'normal' }}>{resultado.mensagem}</div>
         </div>
       )}
     </div>

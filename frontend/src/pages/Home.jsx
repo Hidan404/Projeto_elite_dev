@@ -20,7 +20,7 @@ export default function Home() {
 
   return (
     <div className="container">
-      <div className="page-header">
+      <div className="home-header">
         <h1>Filmes em cartaz</h1>
         <p>Escolha um filme, selecione seus assentos e garanta seu ingresso.</p>
       </div>

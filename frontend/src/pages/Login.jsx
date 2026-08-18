@@ -52,7 +52,7 @@ export default function Login() {
           />
         </div>
         <button type="submit" className="btn btn-block">Entrar</button>
-        <p style={{ marginTop: '14px', textAlign: 'center', fontSize: '0.9rem' }}>
+        <p className="auth-footnote">
           Não tem conta? <Link to="/registro">Crie uma</Link>
         </p>
       </form>

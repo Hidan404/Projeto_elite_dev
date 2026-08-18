@@ -45,8 +45,8 @@ export default function Checkout() {
         <p>Simulação de pagamento — use um cartão 4242 para aprovar, qualquer outro para recusar.</p>
       </div>
 
-      <div className="card card-padding" style={{ marginBottom: '20px' }}>
-        <h2 style={{ fontSize: '1.1rem', marginBottom: '10px' }}>Resumo</h2>
+      <div className="card card-padding mb-lg">
+        <h2 className="mb-sm">Resumo</h2>
         <div className="summary-row"><span>{evento.titulo}</span><span>{evento.local}</span></div>
         <div className="summary-row"><span>Assentos reservados</span><span>{reserva.assentos.join(', ')}</span></div>
         <div className="summary-row"><span>Preço por assento</span><span>{Number(evento.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></div>
@@ -67,12 +67,12 @@ export default function Checkout() {
             required
           />
         </div>
-        <div style={{ display: 'flex', gap: '14px' }}>
-          <div className="form-group" style={{ flex: 1 }}>
+        <div className="form-row">
+          <div className="form-group">
             <label htmlFor="validade">Validade</label>
             <input id="validade" className="input" placeholder="12/30" value={validade} onChange={(e) => setValidade(e.target.value)} required />
           </div>
-          <div className="form-group" style={{ flex: 1 }}>
+          <div className="form-group">
             <label htmlFor="cvv">CVV</label>
             <input id="cvv" className="input" placeholder="123" value={cvv} onChange={(e) => setCvv(e.target.value)} required />
           </div>

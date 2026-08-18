@@ -47,18 +47,18 @@ export default function EventoDetalhe() {
 
   return (
     <div className="container">
-      <div style={{ display: 'flex', gap: '24px', margin: '24px 0', flexWrap: 'wrap' }}>
+      <div className="detail-layout">
         <img
+          className="detail-poster"
           src={evento.poster_path ? `${IMG_BASE}${evento.poster_path}` : 'https://placehold.co/300x450?text=Filme'}
           alt={evento.titulo}
-          style={{ width: '260px', borderRadius: '10px', objectFit: 'cover' }}
         />
-        <div style={{ flex: 1, minWidth: '280px' }}>
-          <h1 style={{ fontSize: '1.6rem' }}>{evento.titulo}</h1>
-          <p style={{ color: 'var(--text-muted)', margin: '8px 0 16px' }}>
+        <div className="detail-body">
+          <h1>{evento.titulo}</h1>
+          <p className="detail-meta">
             {new Date(evento.data).toLocaleString('pt-BR')} · {evento.local}
           </p>
-          <p style={{ marginBottom: '16px' }}>{evento.sinopse}</p>
+          <p className="detail-sinopse">{evento.sinopse}</p>
           <p>
             <strong>Preço por assento:</strong>{' '}
             {Number(evento.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -66,8 +66,8 @@ export default function EventoDetalhe() {
         </div>
       </div>
 
-      <div className="card card-padding" style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '1.2rem', marginBottom: '16px' }}>Selecione seus assentos</h2>
+      <div className="card card-padding mb-lg">
+        <h2 className="mb-md">Selecione seus assentos</h2>
         {!user ? (
           <div className="empty-state">
             <h3>Você precisa entrar para reservar</h3>
@@ -76,9 +76,9 @@ export default function EventoDetalhe() {
         ) : (
           <>
             <SeatMap seats={evento.seats} selected={selecionados} onSelect={toggleSeat} />
-            {erro && <div className="form-error" style={{ marginTop: '14px' }}>{erro}</div>}
+            {erro && <div className="form-error mt-md">{erro}</div>}
             {selecionados.length > 0 && (
-              <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="seat-bar">
                 <span>
                   <strong>{selecionados.length}</strong> assento(s) ·{' '}
                   <strong>

@@ -3,6 +3,7 @@ export default function SeatMap({ seats, selected, onSelect }) {
 
   return (
     <div className="seat-map">
+      <div className="screen-bar">Tela</div>
       {fileiras.map((f) => (
         <div key={f} className="seat-row">
           <span className="seat-row-label">{f}</span>

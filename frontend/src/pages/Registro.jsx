@@ -42,7 +42,7 @@ export default function Registro() {
           <input id="senha" type="password" className="input" value={senha} onChange={(e) => setSenha(e.target.value)} required />
         </div>
         <button type="submit" className="btn btn-block">Criar conta</button>
-        <p style={{ marginTop: '14px', textAlign: 'center', fontSize: '0.9rem' }}>
+        <p className="auth-footnote">
           Já tem conta? <Link to="/login">Entre aqui</Link>
         </p>
       </form>

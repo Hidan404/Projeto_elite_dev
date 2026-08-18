@@ -6,7 +6,6 @@ const IMG_BASE = 'https://image.tmdb.org/t/p/w200'
 
 export default function Painel() {
   const [meusEventos, setMeusEventos] = useState([])
-  const [todosEventos, setTodosEventos] = useState([])
   const [buscaTMDb, setBuscaTMDb] = useState('')
   const [resultados, setResultados] = useState([])
   const [form, setForm] = useState({ tmdb_movie_id: 0, data: '', local: '', preco: '' })
@@ -15,12 +14,7 @@ export default function Painel() {
 
   const carregar = () => {
     api.get('/events')
-      .then((r) => {
-        setTodosEventos(r.data)
-        const email = JSON.parse(localStorage.getItem('user') || '{}').email
-        // Exibe todos; backend não expõe organizador por evento ainda
-        setMeusEventos(r.data)
-      })
+      .then((r) => setMeusEventos(r.data))
       .catch(() => {})
   }
 
@@ -78,14 +72,14 @@ export default function Painel() {
       </div>
 
       {erro && (
-        <div className="card card-padding" style={{ borderColor: '#fecaca', background: '#fef2f2', marginBottom: '24px' }}>
+        <div className="card card-padding mb-lg" style={{ borderColor: '#fecaca', background: '#fef2f2' }}>
           <strong style={{ color: 'var(--danger)' }}>Não foi possível concluir a ação</strong>
           <p style={{ color: 'var(--text)', marginTop: '6px' }}>{erro}</p>
         </div>
       )}
 
-      <div className="card card-padding" style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '1.1rem', marginBottom: '14px' }}>1. Buscar filme no catálogo</h2>
+      <div className="card card-padding mb-lg">
+        <h2 className="mb-md">1. Buscar filme no catálogo</h2>
         <form onSubmit={buscarFilmes} className="search-bar" style={{ marginBottom: 0 }}>
           <input
             className="input"
@@ -97,11 +91,11 @@ export default function Painel() {
         </form>
 
         {resultados.length > 0 && (
-          <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div className="flex-col mt-md" style={{ gap: '10px' }}>
             {resultados.slice(0, 8).map((f) => (
-              <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
-                <img src={f.poster_path ? `${IMG_BASE}${f.poster_path}` : 'https://placehold.co/60x90'} alt="" style={{ width: '50px', borderRadius: '6px' }} />
-                <div style={{ flex: 1 }}>
+              <div key={f.id} className="movie-result">
+                <img src={f.poster_path ? `${IMG_BASE}${f.poster_path}` : 'https://placehold.co/60x90'} alt="" />
+                <div className="flex-1">
                   <strong>{f.titulo}</strong>
                   <p className="event-meta" style={{ fontSize: '0.8rem' }}>ID TMDb: {f.id}</p>
                 </div>
@@ -117,14 +111,14 @@ export default function Painel() {
         )}
       </div>
 
-      <div className="card card-padding" style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '1.1rem', marginBottom: '14px' }}>2. Publicar evento</h2>
+      <div className="card card-padding mb-lg">
+        <h2 className="mb-md">2. Publicar evento</h2>
         <form onSubmit={criarEvento}>
           <div className="form-group">
             <label>Filme selecionado</label>
             {selecionado ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px' }}>
-                <img src={selecionado.poster_path ? `${IMG_BASE}${selecionado.poster_path}` : 'https://placehold.co/60x90'} alt="" style={{ width: '50px', borderRadius: '6px' }} />
+              <div className="movie-result selected" style={{ cursor: 'default' }}>
+                <img src={selecionado.poster_path ? `${IMG_BASE}${selecionado.poster_path}` : 'https://placehold.co/60x90'} alt="" />
                 <div>
                   <strong>{selecionado.titulo}</strong>
                   <p className="event-meta" style={{ fontSize: '0.8rem' }}>ID TMDb: {selecionado.id}</p>
@@ -134,7 +128,7 @@ export default function Painel() {
               <input className="input" value="" readOnly placeholder="Selecione um filme na busca acima" />
             )}
           </div>
-          <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+          <div className="form-row" style={{ flexWrap: 'wrap' }}>
             <div className="form-group" style={{ flex: 2 }}>
               <label>Data e hora</label>
               <input type="datetime-local" className="input" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} required />
@@ -155,20 +149,20 @@ export default function Painel() {
       </div>
 
       <div>
-        <h2 style={{ fontSize: '1.1rem', marginBottom: '14px' }}>Meus eventos</h2>
+        <h2 className="mb-md">Meus eventos</h2>
         {meusEventos.length === 0 ? (
           <div className="empty-state">Nenhum evento publicado ainda.</div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="flex-col" style={{ gap: '12px' }}>
             {meusEventos.map((e) => (
-              <div key={e.id} className="card card-padding" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+              <div key={e.id} className="card card-padding flex-between" style={{ flexWrap: 'wrap' }}>
                 <div>
                   <strong>{e.titulo}</strong>
                   <p className="event-meta" style={{ fontSize: '0.85rem' }}>
                     {new Date(e.data).toLocaleString('pt-BR')} · {e.local} · {Number(e.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </p>
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div className="flex gap-sm">
                   <Link to={`/eventos/${e.id}`} className="btn btn-sm btn-secondary">Ver</Link>
                   <button className="btn btn-sm btn-danger" onClick={() => cancelarEvento(e.id)}>Cancelar</button>
                 </div>
