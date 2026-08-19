@@ -30,6 +30,7 @@ class EventOut(BaseModel):
     local: str
     preco: Decimal
     poster_path: str | None = None
+    backdrop_path: str | None = None
 
     class Config:
         from_attributes = True

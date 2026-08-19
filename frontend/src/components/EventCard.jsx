@@ -17,10 +17,12 @@ export default function EventCard({ evento }) {
 
   return (
     <article className="card event-card">
-      <img
-        src={evento.poster_path ? `${IMG_BASE}${evento.poster_path}` : 'https://placehold.co/400x200?text=Filme'}
-        alt={evento.titulo}
-      />
+      <div className="event-cover">
+        <img
+          src={evento.poster_path ? `${IMG_BASE}${evento.poster_path}` : 'https://placehold.co/400x200?text=Filme'}
+          alt={evento.titulo}
+        />
+      </div>
       <div className="event-body">
         <h3>{evento.titulo}</h3>
         <p className="event-meta">📅 {data}</p>

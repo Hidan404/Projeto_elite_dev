@@ -29,6 +29,7 @@ def montar_evento_out(evento: Event) -> EventOut:
         local=evento.local,
         preco=evento.preco,
         poster_path=evento.movie.poster_path if evento.movie else None,
+        backdrop_path=evento.movie.backdrop_path if evento.movie else None,
     )
 
 
@@ -46,7 +47,7 @@ async def buscar_catalogo(query: str = ""):
         filmes = await buscar_filmes_em_cartaz()
     return [
         {"id": f["id"], "titulo": f.get("title"), "sinopse": f.get("overview"),
-         "poster_path": f.get("poster_path")}
+         "poster_path": f.get("poster_path"), "backdrop_path": f.get("backdrop_path")}
         for f in filmes
     ]
 
@@ -75,6 +76,7 @@ async def criar_evento(
             titulo=detalhe.get("title", "Sem título"),
             sinopse=detalhe.get("overview"),
             poster_path=detalhe.get("poster_path"),
+            backdrop_path=detalhe.get("backdrop_path"),
         )
         db.add(filme)
         db.flush()

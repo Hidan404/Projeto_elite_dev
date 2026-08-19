@@ -12,3 +12,4 @@ class Movie(Base):
     titulo: Mapped[str] = mapped_column(String(200))
     sinopse: Mapped[str | None] = mapped_column(String(2000), nullable=True)
     poster_path: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    backdrop_path: Mapped[str | None] = mapped_column(String(255), nullable=True)
