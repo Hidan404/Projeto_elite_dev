@@ -130,6 +130,11 @@ O projeto saiu do local e foi pra produção:
 - **Banco**: Postgres gerenciado no **Neon** (gratuito, não expira como o do Render).
 - **Cookie em produção**: `COOKIE_SECURE=true` + `COOKIE_SAMESITE=none` (domínios diferentes exigem isso) e `CORS_ORIGINS=https://cineelite.vercel.app`.
 
+> ### ⚠️ IMPORTANTE — Plano free do Render (comportamento esperado)
+> **Ao abrir a aplicação, se os eventos não carregarem de imediato, NÃO é bug**: o Render no plano **free** **dorme** o serviço após um tempo sem requisições. A primeira chamada após o sono **reinicia o servidor** e pode levar **até ~1 min** para responder. Por isso:
+> - A Home exibe **"Carregando eventos..."** e, se a requisição estourar o timeout (90s), mostra o botão **"Tentar novamente"** — clicar e aguardar resolve.
+> - Esse comportamento é **reflexo do plano free do Render** (cold start), não um problema da aplicação. Em plano pago, o serviço fica sempre ativo e carrega instantaneamente.
+
 ### Erros que valem anotar
 - **Alembic não lia `DATABASE_URL`**: o `env.py` usa `config.get_main_option("sqlalchemy.url")` do `alembic.ini` (localhost). Tentei migrar o Neon com a env var e **nada aconteceu** (a migração foi pro banco local). Correção: `config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)` no `env.py`.
 - **Seed antes da migração**: rodei o `seed.py` contra o Neon antes de aplicar a migração → `relation "users" does not exist`. Ordem importa: migração primeiro, seed depois (no Dockerfile/start command já está nessa ordem).
